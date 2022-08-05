@@ -17,21 +17,20 @@ import java.util.Queue;
 public class SnakeAndLadderService {
     private SnakeAndLadderBoard snakeAndLadderBoard;
     private int numberOfPlayers;
-    private Queue<Player> players;
+    private Queue<Player> playersQueue;
     private boolean isGameCompleted;
 
     public SnakeAndLadderService(int boardSize){
         this.snakeAndLadderBoard = new SnakeAndLadderBoard(boardSize);
-        this.players = new LinkedList<Player>();
+        this.playersQueue = new LinkedList<Player>();
         this.isGameCompleted = false;
     }
 
-    public void setPlayers(List<Player> players){
+    public void setPlayersQueue(List<Player> players){
         HashMap<String, Integer> playerPieces = new HashMap<String, Integer>();
         for (Player player: players){
-            this.players.add(player);
+            playersQueue.add(player);
             playerPieces.put(player.getId(), 0);
-            //Each of the player will start at 0th position;
         }
         snakeAndLadderBoard.setPlayerPieces(playerPieces);
     }
@@ -44,56 +43,51 @@ public class SnakeAndLadderService {
         snakeAndLadderBoard.setLadders(ladders);
     }
 
-    public int getPosition(Player p){
-        return this.snakeAndLadderBoard.getPlayerPieces().get(p.getId());
-    }
-
     public void startGame(){
-        while (!isGameCompleted){
-            int totalDiceValue = DiceService.roll();
-            Player p = this.players.poll();
-            movePlayer(p, totalDiceValue);
-            System.out.println(p.getName()+" "+getPosition(p));
-            if(hasPlayerWon(p)){
-                System.out.println(p.getId()+" "+p.getName()+" has won the game");
-                isGameCompleted = true;
+        int place = 1;
+        while (playersQueue.size() != 0){
+            int totalDiceValue = DiceService.roll(); //1-6
+            Player p = playersQueue.poll(); //[p2,p3,p4]
+            int newPosition = movePlayer(p, totalDiceValue);
+            System.out.println(p.getName()+" "+newPosition);
+            if(newPosition > snakeAndLadderBoard.getSize()){
+                System.out.println(p.getId()+" "+p.getName()+" has won the game at place: "+place);
+                place++;
+//                isGameCompleted = true;
             }
-            this.players.add(p);
+            else{
+                playersQueue.add(p); //[p2,p3,p4,p1]
+            }
         }
     }
 
-    private boolean hasPlayerWon(Player p) {
-        HashMap<String, Integer> playerPieces =
-                this.snakeAndLadderBoard.getPlayerPieces();
-        return playerPieces.get(p.getId()) > this.snakeAndLadderBoard.getSize();
-    }
-
-    private void movePlayer(Player p, int totalDiceValue) {
-        HashMap<String, Integer> playerPieces =
-            this.snakeAndLadderBoard.getPlayerPieces();
+    private int movePlayer(Player p, int totalDiceValue) {
+        HashMap<String, Integer> playerPieces = snakeAndLadderBoard.getPlayerPieces();
         int oldPosition = playerPieces.get(p.getId());
         int newPosition = oldPosition + totalDiceValue;
         int boardSize = this.snakeAndLadderBoard.getSize();
         if(newPosition <= boardSize){
-            newPosition = getModifiedPositionAfterSnakeAndLadder(newPosition);
+            //still the game is on
+            newPosition = getModifiedPositionAfterSnakeAndLadder(p, newPosition);
         }
         playerPieces.put(p.getId(), newPosition);
+        return newPosition;
     }
 
-    private int getModifiedPositionAfterSnakeAndLadder(int newPosition) {
-        for(Snake snake: this.snakeAndLadderBoard.getSnakes()){
+    private int getModifiedPositionAfterSnakeAndLadder(Player p, int newPosition) {
+        for(Snake snake: snakeAndLadderBoard.getSnakes()){
             if(snake.getStartPosition() == newPosition){
                 newPosition = snake.getEndPosition();
                 System.out.println("Snake movement from "+ snake.getStartPosition()
-                        + " to "+ snake.getEndPosition());
+                        + " to "+ snake.getEndPosition()+" for player: "+p.getName());
                 break;
             }
         }
-        for (Ladder ladder: this.snakeAndLadderBoard.getLadders()){
+        for (Ladder ladder: snakeAndLadderBoard.getLadders()){
             if(ladder.getStartPosition() == newPosition){
                 newPosition = ladder.getEndPosition();
                 System.out.println("Ladder movement from "+ ladder.getStartPosition()
-                        + " to "+ ladder.getEndPosition());
+                        + " to "+ ladder.getEndPosition()+" for player: "+p.getName());
                 break;
             }
         }

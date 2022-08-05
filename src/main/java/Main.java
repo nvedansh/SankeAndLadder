@@ -1,10 +1,10 @@
+import models.Ladder;
 import models.Player;
 import models.Snake;
 import services.SnakeAndLadderService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Main {
     public static void main(String args[]){
@@ -24,12 +24,32 @@ public class Main {
 
 
         Snake s1 = new Snake(53, 45);
+        Snake s2 = new Snake(11, 4);
+        Snake s3 = new Snake(69, 42);
+        Snake s4 = new Snake(99, 3);
         List<Snake> snakes = new ArrayList<>();
         snakes.add(s1);
+        snakes.add(s2);
+        snakes.add(s3);
+        snakes.add(s4);
 
-        game.setPlayers(players);
+        Ladder l1 = new Ladder(8, 13);
+        Ladder l2 = new Ladder(21, 55);
+        Ladder l3 = new Ladder(6, 51);
+        Ladder l4 = new Ladder(43, 82);
+
+        List<Ladder> ladders = new ArrayList<Ladder>();
+        ladders.add(l1);
+        ladders.add(l2);
+        ladders.add(l3);
+        ladders.add(l4);
+
+        game.setPlayersQueue(players);
         game.setSnakes(snakes);
+        game.setLadders(ladders);
 
         game.startGame();
+
     }
+    //game = {board, isCompleted=true, Queue<Players>}
 }
